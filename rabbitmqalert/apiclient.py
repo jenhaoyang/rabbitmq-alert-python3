@@ -1,4 +1,5 @@
-import urllib2
+import urllib.request
+import urllib.error
 import json
 
 
@@ -9,9 +10,8 @@ class ApiClient:
         self.arguments = arguments
 
     def get_queue(self):
-        uri = "/api/queues/%s/%s" % (self.arguments["server_vhost"], self.arguments["server_queue"])
+        uri = "/api/queues/{}/{}".format(self.arguments["server_vhost"], self.arguments["server_queue"])
         data = self.send_request(uri)
-
         return data
 
     def get_queues(self):
@@ -21,12 +21,10 @@ class ApiClient:
             self.log.error("No queues discovered (request failed).")
             return []
 
-        queues = []
-        for queue in data.get("items"):
-            queues.append(queue.get("name"))
+        queues = [queue.get("name") for queue in data.get("items", [])]
 
         if queues:
-            self.log.info("Queues discovered: {0}".format(", ".join(queues)))
+            self.log.info(f"Queues discovered: {', '.join(queues)}")
         else:
             self.log.error("No queues discovered.")
 
@@ -34,36 +32,29 @@ class ApiClient:
 
     def get_connections(self):
         uri = "/api/connections"
-        data = self.send_request(uri)
-
-        return data
+        return self.send_request(uri)
 
     def get_consumers(self):
         uri = "/api/consumers"
-        data = self.send_request(uri)
-
-        return data
+        return self.send_request(uri)
 
     def get_nodes(self):
         uri = "/api/nodes"
-        data = self.send_request(uri)
-
-        return data
+        return self.send_request(uri)
 
     def send_request(self, uri):
-        url = "%s://%s:%s%s" % (self.arguments["server_scheme"], self.arguments["server_host"], self.arguments["server_port"], uri)
-
-        password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        url = f"{self.arguments['server_scheme']}://{self.arguments['server_host']}:{self.arguments['server_port']}{uri}"
+        password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
         password_mgr.add_password(None, url, self.arguments["server_username"], self.arguments["server_password"])
-        handler = urllib2.HTTPBasicAuthHandler(password_mgr)
-        opener = urllib2.build_opener(handler)
+        handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
+        opener = urllib.request.build_opener(handler)
 
         try:
             request = opener.open(url)
             response = request.read()
             request.close()
 
-            return json.loads(response)
-        except (urllib2.HTTPError, urllib2.URLError):
-            self.log.error("Error while consuming the API endpoint \"{0}\"".format(url))
+            return json.loads(response.decode('utf-8'))
+        except (urllib.error.HTTPError, urllib.error.URLError) as e:
+            self.log.error(f"Error while consuming the API endpoint \"{url}\": {e}")
             return None

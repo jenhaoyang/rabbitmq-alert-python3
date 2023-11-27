@@ -1,6 +1,3 @@
-import ConfigParser
-import os.path
-
 import apiclient
 from models import argument
 
@@ -38,7 +35,7 @@ class ArgumentsParser:
 
         model = argument.Argument(self.log, arguments)
 
-        # parse the standard arguments (created with argparse)
+        # parse the standard arguments
         for group in parser._action_groups:
             group_title = group.title
             for group_argument in group._group_actions:
@@ -67,7 +64,7 @@ class ArgumentsParser:
         self.validate(arguments)
 
         conditions = self.format_conditions(arguments)
-        arguments = dict(arguments.items() + conditions.items())
+        arguments = {**arguments, **conditions}
 
         return arguments
 
@@ -84,7 +81,7 @@ class ArgumentsParser:
     def format_conditions(arguments):
         conditions = dict()
 
-        # get the generic condition values from the "[Conditions]" section
+        # get the generic condition values
         generic_conditions = dict()
         for key in GENERIC_CONDITIONS:
             generic_conditions[key] = arguments[key]
@@ -92,7 +89,7 @@ class ArgumentsParser:
         for queue in arguments["server_queues"]:
             conditions[queue] = dict()
 
-            if not queue in arguments["queue_conditions"]:
+            if queue not in arguments["queue_conditions"]:
                 for key in QUEUE_CONDITIONS:
                     conditions[queue][key] = arguments[key]
             else:
