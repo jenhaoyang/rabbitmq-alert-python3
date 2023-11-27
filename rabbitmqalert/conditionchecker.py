@@ -1,6 +1,3 @@
-#! /usr/bin/python2
-# -*- coding: utf-8 -*-
-
 
 class ConditionChecker:
 
@@ -27,16 +24,16 @@ class ConditionChecker:
         consumers_connected_min = queue_conditions.get("conditions_queue_consumers_connected")
 
         if ready_size is not None and messages_ready > ready_size:
-            self.notifier.send_notification("%s: messages_ready = %d > %d" % (queue, messages_ready, ready_size))
+            self.notifier.send_notification(f"{queue}: messages_ready = {messages_ready} > {ready_size}")
 
         if unack_size is not None and messages_unacknowledged > unack_size:
-            self.notifier.send_notification("%s: messages_unacknowledged = %d > %d" % (queue, messages_unacknowledged, unack_size))
+            self.notifier.send_notification(f"{queue}: messages_unacknowledged = {messages_unacknowledged} > {unack_size}")
 
         if total_size is not None and messages > total_size:
-            self.notifier.send_notification("%s: messages = %d > %d" % (queue, messages, total_size))
+            self.notifier.send_notification(f"{queue}: messages = {messages} > {total_size}")
 
         if consumers_connected_min is not None and consumers < consumers_connected_min:
-            self.notifier.send_notification("%s: consumers_connected = %d < %d" % (queue, consumers, consumers_connected_min))
+            self.notifier.send_notification(f"{queue}: consumers_connected = {consumers} < {consumers_connected_min}")
 
     def check_consumer_conditions(self, arguments):
         response = self.client.get_consumers()
@@ -46,8 +43,8 @@ class ConditionChecker:
         consumers_connected = len(response)
         consumers_connected_min = arguments["generic_conditions"].get("conditions_consumers_connected")
 
-        if consumers_connected is not None and consumers_connected < consumers_connected_min:
-            self.notifier.send_notification("consumers_connected = %d < %d" % (consumers_connected, consumers_connected_min))
+        if consumers_connected_min is not None and consumers_connected < consumers_connected_min:
+            self.notifier.send_notification(f"consumers_connected = {consumers_connected} < {consumers_connected_min}")
 
     def check_connection_conditions(self, arguments):
         response = self.client.get_connections()
@@ -55,11 +52,10 @@ class ConditionChecker:
             return
 
         open_connections = len(response)
-
         open_connections_min = arguments["generic_conditions"].get("conditions_open_connections")
 
-        if open_connections is not None and open_connections < open_connections_min:
-            self.notifier.send_notification("open_connections = %d < %d" % (open_connections, open_connections_min))
+        if open_connections_min is not None and open_connections < open_connections_min:
+            self.notifier.send_notification(f"open_connections = {open_connections} < {open_connections_min}")
 
     def check_node_conditions(self, arguments):
         response = self.client.get_nodes()
@@ -67,14 +63,13 @@ class ConditionChecker:
             return
 
         nodes_running = len(response)
-
         conditions = arguments["generic_conditions"]
         nodes_run = conditions.get("conditions_nodes_running")
         node_memory = conditions.get("conditions_node_memory_used")
 
         if nodes_run is not None and nodes_running < nodes_run:
-            self.notifier.send_notification("nodes_running = %d < %d" % (nodes_running, nodes_run))
+            self.notifier.send_notification(f"nodes_running = {nodes_running} < {nodes_run}")
 
         for node in response:
-            if node_memory is not None and node.get("mem_used") > (node_memory * pow(1024, 2)):
-                self.notifier.send_notification("Node %s - node_memory_used = %d > %d MBs" % (node.get("name"), node.get("mem_used"), node_memory))
+            if node_memory is not None and node.get("mem_used") > (node_memory * 1024 ** 2):
+                self.notifier.send_notification(f"Node {node.get('name')} - node_memory_used = {node.get('mem_used')} > {node_memory} MBs")

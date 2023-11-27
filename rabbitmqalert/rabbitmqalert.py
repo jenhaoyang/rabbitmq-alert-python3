@@ -1,8 +1,8 @@
-#! /usr/bin/python2
-# -*- coding: utf-8 -*-
-
 import argparse
 import time
+import json
+import urllib.request
+import urllib.error
 
 import apiclient
 import argumentsparser
@@ -92,8 +92,20 @@ def main():
         if generic_conditions["conditions_consumers_connected"] is not None:
             condition_checker.check_consumer_conditions(arguments)
 
-        time.sleep(arguments["server_check_rate"])
+        # Example of HTTP request handling in Python 3.10
+        if arguments.get("notification_needed"):
+            # Example HTTP request for sending notifications
+            try:
+                data = json.dumps({"message": "Notification message"}).encode('utf-8')
+                req = urllib.request.Request("http://example.com/notification", data, headers={'Content-Type': 'application/json'})
+                with urllib.request.urlopen(req) as response:
+                    response_content = response.read()
+                    log.info(f"Notification sent successfully: {response_content}")
+            except urllib.error.URLError as e:
+                log.error(f"Error sending notification: {e}")
 
+        time.sleep(arguments["server_check_rate"])
 
 if __name__ == "__main__":
     main()
+

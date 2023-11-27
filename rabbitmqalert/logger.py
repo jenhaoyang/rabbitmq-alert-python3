@@ -2,8 +2,7 @@ import logging
 from logging import handlers
 from sys import stdout
 
-LOGGING_PATH = "/var/log/rabbitmq-alert/rabbitmq-alert.log"
-
+LOGGING_PATH = "rabbitmq-alert.log"
 
 class Logger:
 
@@ -11,6 +10,7 @@ class Logger:
         self.logger = logging.getLogger()
         self.logger.setLevel(logging.DEBUG)
 
+        # File handler with rotation
         rotate_handler = handlers.TimedRotatingFileHandler(
             filename=LOGGING_PATH,
             when="midnight"
@@ -19,9 +19,11 @@ class Logger:
         rotate_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
         self.logger.addHandler(rotate_handler)
 
-        stoud_handler = logging.StreamHandler(stdout)
-        stoud_handler.setFormatter(logging.Formatter("%(asctime)s: %(levelname)s - %(message)s"))
-        self.logger.addHandler(stoud_handler)
+        # Standard output handler
+        stdout_handler = logging.StreamHandler(stdout)
+        stdout_handler.setFormatter(logging.Formatter("%(asctime)s: %(levelname)s - %(message)s"))
+        self.logger.addHandler(stdout_handler)
 
     def get_logger(self):
         return self.logger
+

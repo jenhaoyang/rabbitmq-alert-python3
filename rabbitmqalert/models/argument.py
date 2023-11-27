@@ -1,7 +1,7 @@
-import ConfigParser
+import configparser
 import os
 
-CONFIG_FILE_PATH = "/etc/rabbitmq-alert/config.ini"
+CONFIG_FILE_PATH = "config/config.ini"
 
 
 class Argument:
@@ -14,30 +14,30 @@ class Argument:
         self.file = self.load_file()
 
     def load_defaults(self):
-        file_defaults = ConfigParser.ConfigParser()
+        file_defaults = configparser.ConfigParser()
 
         path = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
         defaults_file_path = os.path.join(path, "../config/defaults.ini")
 
         if os.path.isfile(defaults_file_path):
             file_defaults.read(defaults_file_path)
-            self.log.info("Using defaults configuration file \"{0}\"".format(defaults_file_path))
+            self.log.info(f"Using defaults configuration file \"{defaults_file_path}\"")
         else:
-            self.log.error("Defaults configuration file \"{0}\" not found".format(defaults_file_path))
+            self.log.error(f"Defaults configuration file \"{defaults_file_path}\" not found")
             exit(1)
 
         return file_defaults
 
     def load_file(self):
-        file = ConfigParser.ConfigParser()
+        file = configparser.ConfigParser()
 
         if os.path.isfile(CONFIG_FILE_PATH) and not self.arguments["config_file"]:
             file.read(CONFIG_FILE_PATH)
-            self.log.info("Using configuration file \"{0}\"".format(CONFIG_FILE_PATH))
+            self.log.info(f"Using configuration file \"{CONFIG_FILE_PATH}\"")
         elif self.arguments["config_file"]:
-            self.log.info("Using configuration file \"{0}\"".format(self.arguments["config_file"]))
+            self.log.info(f"Using configuration file \"{self.arguments['config_file']}\"")
             if not os.path.isfile(self.arguments["config_file"]):
-                self.log.error("The provided configuration file \"{0}\" does not exist".format(self.arguments["config_file"]))
+                self.log.error(f"The provided configuration file \"{self.arguments['config_file']}\" does not exist")
                 exit(1)
 
             file.read(self.arguments["config_file"])
@@ -53,7 +53,7 @@ class Argument:
         return self.file.has_section(group) or self.defaults.has_section(group)
 
     def create_argument_object(self, dest, object_type, const):
-        group_argument = type('lamdbaobject', (object,), {})()
+        group_argument = type('lambdaobject', (object,), {})()
         group_argument.dest = dest
         group_argument.type = object_type
         group_argument.const = const
@@ -77,7 +77,7 @@ class Argument:
 
         def foo():
             # get value from cli arguments
-            yield (self.arguments[argument.dest] if argument.dest in self.arguments else None)
+            yield self.arguments[argument.dest] if argument.dest in self.arguments else None
             # get value from configuration file (given or global configuration file)
             yield self.get_value_from_file(self.file, group, argument)
             # get value from the defaults file
@@ -90,3 +90,4 @@ class Argument:
         except StopIteration:
             pass
         return value
+

@@ -10,3 +10,6 @@ dist/
 rabbitmq_alert.egg-info/
 
 .vscode/settings.json
+
+rabbitmqalert/config/config.ini
+rabbitmqalert/rabbitmq-alert.log
